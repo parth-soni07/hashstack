@@ -1,6 +1,5 @@
 import React from "react";
 import ContractInteraction from "./ContractInteraction";
-
 function App() {
   return (
     <div className="App">

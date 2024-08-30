@@ -1,104 +1,44 @@
-import React, { useState } from "react";
-import { ethers } from "ethers";
+import React, { useState, useEffect } from "react";
+import { ethers, BrowserProvider } from "ethers";
+// const [connected, setConnected] = useState(false);
 import AAbi from "./abis/A.json";
 import BAbi from "./abis/B.json";
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiProvider, useAccount } from "wagmi";
+import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+// const ethers = require("ethers");
 
 const contractAAddress = "0x2F38EEdf95e1070Fb40D4c1E94bCa0902Cf41Aab";
 const contractBAddress = "0xC10313193842B79C3528916183773F4678078A0e";
+const provider = new BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const contractAabi = AAbi;
+const contractA = new ethers.Contract(contractAAddress, contractAabi, signer);
+const contractBabi = BAbi;
+const contractB = new ethers.Contract(contractBAddress, contractBabi, signer);
 
+const config = getDefaultConfig({
+  appName: "Hashstack",
+  projectId: "d0e48db228d8cafa34b154c24a407421",
+  chains: [mainnet, polygon, optimism, arbitrum, base],
+  ssr: true, // If your dApp uses server side rendering (SSR)
+});
+const queryClient = new QueryClient();
+// ---------------------------------------------------------------------
 const ContractInteraction = () => {
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
-  const [contractA, setContractA] = useState(null);
-  const [contractB, setContractB] = useState(null);
-  const [value, setValue] = useState("");
-  const [newAdminAddress, setNewAdminAddress] = useState("");
-  const [currentValue, setCurrentValue] = useState("");
-
-  const connectWallet = async () => {
-  const providerOptions = {
-    walletconnect: {
-      package: WalletConnectProvider,
-      options: {
-        infuraId: "b09256dcda4e414d8dc706f34d79372e" // Get an Infura ID from https://infura.io/dashboard
-      }
-    }
-  };
-
-  const web3Modal = new window.Web3Modal({
-    cacheProvider: true, // optional
-    providerOptions, // required
-  });
-
-  const instance = await web3Modal.connect();
-  const provider = new ethers.providers.Web3Provider(instance);
-  const signer = provider.getSigner();
-  
-  setProvider(provider);
-  setSigner(signer);
-
-  const contractA = new ethers.Contract(contractAAddress, AAbi, signer);
-  const contractB = new ethers.Contract(contractBAddress, BAbi, signer);
-  setContractA(contractA);
-  setContractB(contractB);
-};
-
-  const handleGetValue = async () => {
-    if (contractA) {
-      const result = await contractA.getValue();
-      setCurrentValue(result.toString());
-    }
-  };
-
-  const handleSetValue = async () => {
-    if (contractA) {
-      const tx = await contractA.setValue(value);
-      await tx.wait();
-      alert("Value has been set successfully.");
-    }
-  };
-
-  const handleUpgradeContract = async () => {
-    if (contractB) {
-      const tx = await contractB.addAdmin(newAdminAddress);
-      await tx.wait();
-      alert("Contract upgraded successfully with new admin.");
-    }
-  };
 
   return (
-    <div>
-    <button onClick={connectWallet}>Connect with WalletConnect</button>
-
-      <div>
-        <h3>Getter Function</h3>
-        <button onClick={handleGetValue}>Get Value</button>
-        {currentValue && <p>Current Value: {currentValue}</p>}
-      </div>
-
-      <div>
-        <h3>Setter Function</h3>
-        <input
-          type="number"
-          placeholder="Enter value to increase"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
-        <button onClick={handleSetValue}>Set Value</button>
-      </div>
-
-      <div>
-        <h3>Contract Upgradeability</h3>
-        <input
-          type="text"
-          placeholder="Enter new admin address"
-          value={newAdminAddress}
-          onChange={(e) => setNewAdminAddress(e.target.value)}
-        />
-        <button onClick={handleUpgradeContract}>Upgrade Contract</button>
-      </div>
-    </div>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <ConnectButton />
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 };
 

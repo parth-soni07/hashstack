@@ -8,7 +8,7 @@ import "./ReentrancyGuardUpgradeable.sol";
 contract A is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 private _status;
     uint256 private _value;
-
+    
     function initialize() public initializer {
         __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
