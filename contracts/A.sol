@@ -5,13 +5,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./ReentrancyGuardUpgradeable.sol";
 
-contract ContractA is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract A is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+        uint256 private _status;
     uint256 private _value;
 
     function initialize() public initializer {
         __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
-        _value = 1;
+        _value = 0;
     }
 
     function setValue(uint256 _increaseBy) public onlyOwner nonReentrant {
